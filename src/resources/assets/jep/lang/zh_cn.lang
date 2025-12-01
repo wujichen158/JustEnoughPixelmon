@@ -1,0 +1,38 @@
+
+jep.pokedrop.text=掉落物
+jep.pokeheld.text=携带物
+jep.raiddrop.text=%s星 %s属性 巢穴
+jep.bossdrop.text=%s Boss
+jep.bossdrop.noitem=无
+jep.moveskill.text=通过 %s 获取 %s
+jep.condition.rarity=稀有程度: %s
+jep.condition.percentage=概率: %s
+jep.condition.time=在以下时间内:
+jep.condition.weather=在以下天气下:
+jep.condition.biome=在以下生物群系中:
+jep.condition.seesky=是否露天: %s
+jep.condition.maxy=最高高度: %s
+jep.condition.miny=最低高度: %s
+jep.shopkeepers.names=商人可能的名字：
+jep.shopkeepers.type=商人类型：%s
+jep.shopkeepers.rarity=概率：%s
+jep.shopkeepers.price.price=购买价格：%s | 回收价格：%s
+jep.shopkeepers.price.canvary=价格变化
+jep.shopkeepers.price.varyrange=25%%打9折 25%%打11折
+
+jep.category.pokedrop.name=宝可梦掉落
+jep.category.pokeheld.name=宝可梦携带
+jep.category.raiddrop.name=巢穴掉落
+jep.category.bossdrop.name=Boss掉落
+jep.category.forage.name=探索(场外招式)
+jep.category.headbutt.name=头锤(场外招式)
+jep.category.rock_smash.name=碎岩(场外招式)
+jep.category.fishing.name=钓鱼
+jep.category.infuser.name=树果炼制器
+jep.category.shopkeepers.name=商人
+
+jep.tooltip.poke.drop.min=最小掉落数:%s
+jep.tooltip.poke.drop.max=最大掉落数:%s
+jep.tooltip.poke.drop.rate=掉落概率:%s
+jep.tooltip.poke.helditem.chance=持有概率:%s
+jep.tooltip.raid.drop.weight=权重:%s

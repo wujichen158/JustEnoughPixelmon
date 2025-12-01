@@ -1,0 +1,13 @@
+{
+  "itemGroup.justenoughpixelmon": "Example Mod Tab",
+  "block.justenoughpixelmon.example_block": "Example Block",
+  "item.justenoughpixelmon.example_item": "Example Item",
+
+  "justenoughpixelmon.configuration.title": "JustEnoughPixelmon Configs",
+  "justenoughpixelmon.configuration.section.justenoughpixelmon.common.toml": "JustEnoughPixelmon Configs",
+  "justenoughpixelmon.configuration.section.justenoughpixelmon.common.toml.title": "JustEnoughPixelmon Configs",
+  "justenoughpixelmon.configuration.items": "Item List",
+  "justenoughpixelmon.configuration.logDirtBlock": "Log Dirt Block",
+  "justenoughpixelmon.configuration.magicNumberIntroduction": "Magic Number Text",
+  "justenoughpixelmon.configuration.magicNumber": "Magic Number"
+}

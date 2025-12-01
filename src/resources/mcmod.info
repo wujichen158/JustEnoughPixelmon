@@ -1,0 +1,16 @@
+[
+{
+  "modid": "jep",
+  "name": "Just Enough Pixelmon",
+  "description": "A mod for Pixelmon on jei.",
+  "version": "1.1",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["Duck_fox"],
+  "credits": "Myself",
+  "logoFile": "jep.ico",
+  "screenshots": [],
+  "dependencies": []
+}
+]
