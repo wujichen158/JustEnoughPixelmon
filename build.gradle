@@ -13,6 +13,13 @@ version = mod_version
 group = mod_group_id
 
 repositories {
+    // JEI repo
+    maven {
+        name = "Jared's maven"
+        url = "https://maven.blamejared.com/"
+    }
+
+    // Pixelmon repo
     ivy {
         setUrl('https://download.nodecdn.net/containers/reforged/universal/release')
 
@@ -83,8 +90,15 @@ configurations {
 }
 
 dependencies {
+    // Pixelmon
     implementation("pixelmon:Pixelmon-${minecraft_version}-${pixelmon_version}-universal:${pixelmon_version}")
     interfaceInjectionData("pixelmon:Pixelmon-${minecraft_version}-${pixelmon_version}-universal-interfaceinjection:${pixelmon_version}@json")
+
+    // JEI
+    // compile against the JEI API but do not include it at runtime
+    compileOnly("mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}")
+    // at runtime, use the full JEI jar for NeoForge
+    runtimeOnly("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
@@ -100,7 +114,9 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             mod_authors            : mod_authors,
             mod_description        : mod_description,
             pixelmon_version       : pixelmon_version,
-            pixelmon_version_range : pixelmon_version_range
+            pixelmon_version_range : pixelmon_version_range,
+            jei_version            : jei_version,
+            jei_version_range      : jei_version_range
     ]
     inputs.properties replaceProperties
     expand replaceProperties
