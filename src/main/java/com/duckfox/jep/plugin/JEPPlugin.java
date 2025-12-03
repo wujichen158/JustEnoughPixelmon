@@ -1,55 +1,57 @@
 package com.duckfox.jep.plugin;
 
-import com.duckfox.jep.plugin.boss.BossDropRecipeCategory;
-import com.duckfox.jep.plugin.den.RaidDropRecipeCategory;
-import com.duckfox.jep.plugin.fishing.FishingRecipeCategory;
-import com.duckfox.jep.plugin.infuser.InfuserRecipeCategory;
-import com.duckfox.jep.plugin.moveskill.ForageRecipeCategory;
-import com.duckfox.jep.plugin.moveskill.HeadbuttRecipeCategory;
-import com.duckfox.jep.plugin.moveskill.RockSmashRecipeCategory;
-import com.duckfox.jep.plugin.pokemon.PokeDropRecipeCategory;
-import com.duckfox.jep.plugin.pokemon.PokeHeldRecipeCategory;
-import com.duckfox.jep.plugin.shopkeepers.ShopKeepersRecipeCategory;
-import mezz.jei.api.IGuiHelper;
+import com.duckfox.jep.utils.Resources;
 import mezz.jei.api.IModPlugin;
-import mezz.jei.api.IModRegistry;
-import mezz.jei.api.JEIPlugin;
-import mezz.jei.api.recipe.IRecipeCategoryRegistration;
+import mezz.jei.api.JeiPlugin;
+import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.registration.IRecipeCategoryRegistration;
+import mezz.jei.api.registration.IRecipeRegistration;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.RecipeManager;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@JEIPlugin
+@JeiPlugin
 public class JEPPlugin implements IModPlugin {
+    private List<DuckRecipeCategory<?>> categories = new ArrayList<>();
 
-    private List<DuckRecipeCategory<?>> categories;
+    @NotNull
+    @Override
+    public ResourceLocation getPluginUid() {
+        return Resources.PLUGIN_UID;
+    }
 
     @Override
     public void registerCategories(IRecipeCategoryRegistration registry) {
-        categories = new ArrayList<>();
         IGuiHelper helper = registry.getJeiHelpers().getGuiHelper();
-        categories.add(new PokeDropRecipeCategory(helper));
-        categories.add(new PokeHeldRecipeCategory(helper));
-        categories.add(new RaidDropRecipeCategory(helper));
-        categories.add(new BossDropRecipeCategory(helper));
-        categories.add(new ForageRecipeCategory(helper));
-        categories.add(new HeadbuttRecipeCategory(helper));
-        categories.add(new RockSmashRecipeCategory(helper));
-        categories.add(new FishingRecipeCategory(helper));
-        categories.add(new InfuserRecipeCategory(helper));
-        categories.add(new ShopKeepersRecipeCategory(helper));
-
+        categories.add(new com.duckfox.jep.plugin.pokemon.PokeDropRecipeCategory(helper));
+        categories.add(new com.duckfox.jep.plugin.pokemon.PokeHeldRecipeCategory(helper));
+        categories.add(new com.duckfox.jep.plugin.boss.BossDropRecipeCategory(helper));
+        categories.add(new com.duckfox.jep.plugin.shopkeepers.ShopKeepersRecipeCategory(helper));
+        categories.add(new com.duckfox.jep.plugin.den.RaidDropRecipeCategory(helper));
+        categories.add(new com.duckfox.jep.plugin.fishing.FishingRecipeCategory(helper));
+        categories.add(new com.duckfox.jep.plugin.infuser.InfuserRecipeCategory(helper));
+        categories.add(new com.duckfox.jep.plugin.moveskill.ForageRecipeCategory(helper));
+        categories.add(new com.duckfox.jep.plugin.moveskill.HeadbuttRecipeCategory(helper));
+        categories.add(new com.duckfox.jep.plugin.moveskill.RockSmashRecipeCategory(helper));
         for (DuckRecipeCategory<?> category : categories) {
             registry.addRecipeCategories(category);
         }
     }
 
-
     @Override
-    public void register(IModRegistry registry) {
+    public void registerRecipes(@NotNull IRecipeRegistration registry) {
+        var clientLevel = Minecraft.getInstance().level;
+        if (clientLevel == null) {
+            return;
+        }
+
+        RecipeManager recipeManager = clientLevel.getRecipeManager();
         for (DuckRecipeCategory<?> category : categories) {
             category.setup(registry);
         }
     }
-
 }

@@ -1,57 +1,57 @@
 package com.duckfox.jep.plugin.boss;
 
 import com.duckfox.jep.plugin.DuckRecipeCategory;
-import com.pixelmonmod.pixelmon.config.PixelmonItemsPokeballs;
 import com.pixelmonmod.pixelmon.entities.npcs.registry.DropItemRegistry;
 import com.pixelmonmod.pixelmon.enums.EnumBossMode;
-import mezz.jei.api.IGuiHelper;
-import mezz.jei.api.IModRegistry;
-import mezz.jei.api.gui.IRecipeLayout;
-import mezz.jei.api.ingredients.IIngredients;
-import net.minecraft.item.ItemStack;
+import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.RecipeType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 public class BossDropRecipeCategory extends DuckRecipeCategory<BossDropRecipeWrapper> {
+    public static final RecipeType<BossDropRecipeWrapper> TYPE = RecipeType.create("justenoughpixelmon", "bossdrop", BossDropRecipeWrapper.class);
+
     public BossDropRecipeCategory(IGuiHelper helper) {
-        super("bossdrop", "jep.bossdrop", helper.createBlankDrawable(170, 110), new ItemStack(PixelmonItemsPokeballs.parkBall));
+        super("bossdrop", TYPE, helper.createBlankDrawable(170, 110), helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(Items.PAPER)));
     }
 
     @Override
-    public void setupRecipes(IModRegistry registry) {
+    public List<BossDropRecipeWrapper> getRecipes() {
         List<BossDropRecipeWrapper> recipes = new ArrayList<>();
-
         for (Map.Entry<EnumBossMode, ArrayList<ItemStack>> outer : DropItemRegistry.bossDrops.entrySet()) {
             recipes.add(new BossDropRecipeWrapper(outer.getValue(), outer.getKey()));
         }
         recipes.sort(Comparator.comparingInt(o -> o.getMode().index));
-        registry.addRecipes(recipes, getUid());
+        return recipes;
     }
 
-    public static final int FIRST_ITEM_X = 5;
-    public static final int FIRST_ITEM_Y = 15;
     @Override
-    public void setRecipe(IRecipeLayout iRecipeLayout, BossDropRecipeWrapper bossDropRecipeWrapper, IIngredients iIngredients) {
+    public void setRecipe(IRecipeLayoutBuilder builder, BossDropRecipeWrapper recipe, IFocusGroup focuses) {
         int xOffset = 0;
         int yOffset = 0;
-        int slot = 0;
-        for (int i=0;i<5;i++)
-        {
-            for (int j=0;j<9;j++)
-            {
-                iRecipeLayout.getItemStacks().init(slot++, false, FIRST_ITEM_X + xOffset, FIRST_ITEM_Y+yOffset);
-                xOffset += 18;
+        int slotX = 5;
+        int slotY = 15;
+        int col = 0;
+        int row = 0;
+        for (ItemStack stack : recipe.getItemStacks()) {
+            builder.addSlot(RecipeIngredientRole.OUTPUT, slotX + xOffset, slotY + yOffset).addItemStack(stack);
+            col++;
+            xOffset += 18;
+            if (col == 9) {
+                col = 0;
+                xOffset = 0;
+                row++;
+                yOffset = row * 18;
             }
-            xOffset = 0;
-            yOffset += 18;
-        }
-
-
-
-        slot = 0;
-        for (int i=0;i<bossDropRecipeWrapper.getItemStacks().size();i++)
-        {
-            iRecipeLayout.getItemStacks().set(slot++, bossDropRecipeWrapper.getItemStacks().get(i));
         }
     }
 }

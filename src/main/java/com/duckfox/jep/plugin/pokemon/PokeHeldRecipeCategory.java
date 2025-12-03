@@ -4,103 +4,87 @@ import com.duckfox.jep.api.item.PokeHeldItem;
 import com.duckfox.jep.plugin.DuckRecipeCategory;
 import com.duckfox.jep.utils.PokeSprites;
 import com.duckfox.jep.utils.Settings;
-import com.pixelmonmod.pixelmon.api.item.JsonItemStack;
 import com.pixelmonmod.pixelmon.api.spawning.SpawnInfo;
 import com.pixelmonmod.pixelmon.api.spawning.SpawnSet;
+import com.pixelmonmod.pixelmon.api.spawning.archetypes.entities.collection.SpawnInfoCollection;
 import com.pixelmonmod.pixelmon.api.spawning.archetypes.entities.pokemon.SpawnInfoPokemon;
-import com.pixelmonmod.pixelmon.config.PixelmonItemsHeld;
-import com.pixelmonmod.pixelmon.enums.EnumSpecies;
+import com.pixelmonmod.pixelmon.api.item.JsonItemStack;
 import com.pixelmonmod.pixelmon.spawning.PixelmonSpawning;
-import mezz.jei.api.IGuiHelper;
-import mezz.jei.api.IModRegistry;
-import mezz.jei.api.gui.IRecipeLayout;
-import mezz.jei.api.ingredients.IIngredients;
-import net.minecraft.item.ItemStack;
+import com.pixelmonmod.pixelmon.enums.EnumSpecies;
+import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.RecipeType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class PokeHeldRecipeCategory extends DuckRecipeCategory<PokeHeldRecipeWrapper> {
 
-    protected static final int X_FIRST_ITEM = 97;
-    protected static final int Y_FIRST_ITEM = 12;
+    public static final RecipeType<PokeHeldRecipeWrapper> TYPE = RecipeType.create("justenoughpixelmon", "pokeheld", PokeHeldRecipeWrapper.class);
 
     public PokeHeldRecipeCategory(IGuiHelper helper) {
-        super("pokeheld", "jep.pokeheld", helper.createBlankDrawable(170, 30), new ItemStack(PixelmonItemsHeld.destinyKnot));
+        super(
+                "pokeheld",
+                TYPE,
+                helper.createBlankDrawable(170, 120),
+                helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, new ItemStack(Items.PAPER))
+        );
     }
 
     @Override
-    public void setupRecipes(IModRegistry registry) {
+    public List<PokeHeldRecipeWrapper> getRecipes() {
         List<PokeHeldRecipeWrapper> recipes = new ArrayList<>();
-
-        // 1. 获取所有宝可梦种类并按全国编号排序
-        List<EnumSpecies> sortedSpecies = new ArrayList<>(Arrays.asList(EnumSpecies.values()));
-        sortedSpecies.sort(Comparator.comparingInt(EnumSpecies::getNationalPokedexInteger)); // 按编号升序
-
-
-        Map<EnumSpecies, ArrayList<PokeHeldItem>> heldItems = new HashMap<>();
-        HashSet<SpawnSet> allSets = new HashSet<>();
-        allSets.addAll(PixelmonSpawning.standard);
-        allSets.addAll(PixelmonSpawning.caveRock);
-        allSets.addAll(PixelmonSpawning.fishing);
-        allSets.addAll(PixelmonSpawning.forage);
-        allSets.addAll(PixelmonSpawning.grass);
-        allSets.addAll(PixelmonSpawning.headbutt);
-        allSets.addAll(PixelmonSpawning.legendaries);
-        allSets.addAll(PixelmonSpawning.megas);
-        allSets.addAll(PixelmonSpawning.rocksmash);
-        allSets.addAll(PixelmonSpawning.sweetscent);
-
-
-        for (SpawnSet set : allSets) {
-            for (SpawnInfo spawnInfo : set.spawnInfos) {
-                if (spawnInfo instanceof SpawnInfoPokemon) {
-                    SpawnInfoPokemon spawnInfoPokemon = (SpawnInfoPokemon) spawnInfo;
-                    EnumSpecies species = spawnInfoPokemon.getSpecies();
-                    if (spawnInfoPokemon.heldItems != null) {
-                        if (!heldItems.containsKey(species)) {
-                            heldItems.put(species, new ArrayList<>());
-                        }
-                        for (JsonItemStack item : spawnInfoPokemon.heldItems) {
-                            PokeHeldItem heldItem = new PokeHeldItem(item);
-                            if (!heldItems.get(species).contains(heldItem)) {
-                                heldItems.get(species).add(heldItem);
+        // 遍历野外宝可梦生成，汇总其可能持有物
+        for (SpawnSet set : PixelmonSpawning.wildPokemon) {
+            if (Objects.equals(set.id, "Pokemon Spawns") || true) {
+                SpawnInfoCollection spawnInfo = (SpawnInfoCollection) set.spawnInfos.get(0);
+                for (SpawnInfo info : spawnInfo.collection) {
+                    if (info instanceof SpawnInfoPokemon sip) {
+                        EnumSpecies species = sip.getSpecies();
+                        List<PokeHeldItem> heldItems = new ArrayList<>();
+                        if (sip.heldItems != null) {
+                            for (JsonItemStack json : sip.heldItems) {
+                                heldItems.add(new PokeHeldItem(json));
                             }
+                        }
+                        int form = sip.getForm() == null ? -1 : sip.getForm();
+                        if (!heldItems.isEmpty()) {
+                            recipes.add(new PokeHeldRecipeWrapper(species, heldItems, form));
                         }
                     }
                 }
             }
         }
-
-        for (EnumSpecies species : sortedSpecies) {
-            if (heldItems.containsKey(species)) {
-                recipes.add(new PokeHeldRecipeWrapper(species, heldItems.get(species)));
-            }
-        }
-
-        // 3. 注册排序后的配方
-        registry.addRecipes(recipes, getUid());
+        return recipes;
     }
 
     @Override
-    public void setRecipe(IRecipeLayout recipeLayout, PokeHeldRecipeWrapper recipeWrapper, IIngredients iIngredients) {
-        recipeLayout.getItemStacks().init(0, true, 30, 12);
-        if (recipeWrapper.getForm()!=-10086)
-        {
-            recipeLayout.getItemStacks().set(0, PokeSprites.forceNewSpriteWithForm(recipeWrapper.getSpecies(),recipeWrapper.getForm()));
-        }else {
-            recipeLayout.getItemStacks().set(0, PokeSprites.getSprite(recipeWrapper.getSpecies()));
-        }
+    public void setRecipe(IRecipeLayoutBuilder builder, PokeHeldRecipeWrapper recipe, IFocusGroup focuses) {
+        builder.addSlot(RecipeIngredientRole.INPUT, 30, 12)
+                .addItemStack(recipe.getForm() >= 0 ? PokeSprites.forceNewSpriteWithForm(recipe.getSpecies(), recipe.getForm()) : PokeSprites.getSprite(recipe.getSpecies()));
+
         int xOffset = 0;
-        int slot = 1;
-        for (int i = 0; i < Settings.ITEMS_PER_ROW; i++) {
-            recipeLayout.getItemStacks().init(slot++, false, X_FIRST_ITEM + xOffset, Y_FIRST_ITEM);
+        int slotX = 97;
+        int slotY = 12;
+        int col = 0;
+        for (int i = 0; i < Math.min(recipe.getHeldItems().size(), Settings.ITEMS_PER_ROW * Settings.ITEMS_PER_COLUMN); i++) {
+            PokeHeldItem item = recipe.getHeldItems().get(i);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, slotX + xOffset, slotY)
+                    .addItemStack(item.getItemStack())
+                    .addTooltipCallback((view, tooltip) -> tooltip.addAll(item.getTooltip()));
             xOffset += 72 / Settings.ITEMS_PER_ROW;
+            col++;
+            if (col == Settings.ITEMS_PER_ROW) {
+                col = 0;
+                xOffset = 0;
+                slotY += 18;
+            }
         }
-
-        recipeLayout.getItemStacks().addTooltipCallback(recipeWrapper);
-        slot = 1;
-        for (int i = 0; i < Math.min(recipeWrapper.getHeldItems().size(), Settings.ITEMS_PER_ROW * Settings.ITEMS_PER_COLUMN); i++)
-            recipeLayout.getItemStacks().set(slot++, recipeWrapper.getHeldItems().get(i).getItemStack());
-
     }
 }

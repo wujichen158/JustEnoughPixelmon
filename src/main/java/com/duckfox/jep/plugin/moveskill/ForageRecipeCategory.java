@@ -8,38 +8,35 @@ import com.pixelmonmod.pixelmon.api.spawning.archetypes.entities.collection.Spaw
 import com.pixelmonmod.pixelmon.api.spawning.archetypes.entities.items.SpawnInfoItem;
 import com.pixelmonmod.pixelmon.config.PixelmonItems;
 import com.pixelmonmod.pixelmon.spawning.PixelmonSpawning;
-import mezz.jei.api.IGuiHelper;
-import mezz.jei.api.IModRegistry;
-import mezz.jei.api.gui.IRecipeLayout;
-import mezz.jei.api.ingredients.IIngredients;
-import net.minecraft.item.ItemStack;
+import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.recipe.RecipeType;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class ForageRecipeCategory extends MoveSkillRecipeCategory<ForageRecipeWrapper> {
+    public static final RecipeType<ForageRecipeWrapper> TYPE = RecipeType.create("justenoughpixelmon", "forage", ForageRecipeWrapper.class);
+
     public ForageRecipeCategory(IGuiHelper helper) {
-        super("forage", "jep.forage", new ItemStack(PixelmonItems.curryFancyApple), helper);
+        super("forage", TYPE, helper);
     }
 
-    public static final MoveSkill FORAGE_MOVE_SKILL = MoveSkill.getMoveSkillByID("forage");
-
     @Override
-    public void setupRecipes(IModRegistry registry) {
+    public List<ForageRecipeWrapper> getRecipes() {
         List<ForageRecipeWrapper> recipes = new ArrayList<>();
-
         for (SpawnSet set : PixelmonSpawning.forage) {
             if (Objects.equals(set.id, "Forage Loot")) {
                 SpawnInfoCollection spawnInfo = (SpawnInfoCollection) set.spawnInfos.get(0);
                 for (SpawnInfo info : spawnInfo.collection) {
                     SpawnInfoItem spawnInfoItem = (SpawnInfoItem) info;
-                    MoveSkillItem moveSkillItem = new MoveSkillItem(spawnInfoItem.itemStack, FORAGE_MOVE_SKILL, spawnInfoItem.rarity, spawnInfoItem.condition);
+                    MoveSkillItem moveSkillItem = new MoveSkillItem(spawnInfoItem.itemStack, MoveSkill.getMoveSkillByID("forage"), spawnInfoItem.rarity, spawnInfoItem.condition);
                     recipes.add(new ForageRecipeWrapper(moveSkillItem));
                 }
                 break;
             }
         }
-        registry.addRecipes(recipes, getUid());
+        return recipes;
     }
 }

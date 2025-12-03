@@ -84,6 +84,39 @@ neoForge {
 }
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets {
+    main {
+        java {
+            include 'com/duckfox/jep/JustEnoughPixelmon.java'
+            include 'com/duckfox/jep/plugin/JEPPlugin.java'
+            include 'com/duckfox/jep/plugin/DuckRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/pokemon/PokeDropRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/pokemon/PokeDropRecipeWrapper.java'
+            include 'com/duckfox/jep/plugin/pokemon/PokeHeldRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/pokemon/PokeHeldRecipeWrapper.java'
+            include 'com/duckfox/jep/plugin/boss/BossDropRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/boss/BossDropRecipeWrapper.java'
+            include 'com/duckfox/jep/plugin/den/RaidDropRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/den/RaidDropRecipeWrapper.java'
+            include 'com/duckfox/jep/plugin/fishing/FishingRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/fishing/FishingRecipeWrapper.java'
+            include 'com/duckfox/jep/plugin/infuser/InfuserRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/infuser/InfuserRecipeWrapper.java'
+            include 'com/duckfox/jep/plugin/moveskill/MoveSkillRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/moveskill/MoveSkillRecipeWrapper.java'
+            include 'com/duckfox/jep/plugin/moveskill/HeadbuttRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/moveskill/HeadbuttRecipeWrapper.java'
+            include 'com/duckfox/jep/plugin/moveskill/ForageRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/moveskill/ForageRecipeWrapper.java'
+            include 'com/duckfox/jep/plugin/moveskill/RockSmashRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/moveskill/RockSmashRecipeWrapper.java'
+            include 'com/duckfox/jep/plugin/shopkeepers/ShopKeepersRecipeCategory.java'
+            include 'com/duckfox/jep/plugin/shopkeepers/ShopKeepersRecipeWrapper.java'
+            include 'com/duckfox/jep/utils/Resources.java'
+            include 'com/duckfox/jep/utils/Reflections.java'
+        }
+    }
+}
 
 configurations {
     runtimeClasspath.extendsFrom localRuntime

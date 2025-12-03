@@ -1,75 +1,80 @@
 package com.duckfox.jep.plugin.pokemon;
 
 import com.duckfox.jep.plugin.DuckRecipeCategory;
-import com.duckfox.jep.utils.PackedDropInfo;
 import com.duckfox.jep.utils.PokeSprites;
 import com.duckfox.jep.utils.Settings;
-import com.pixelmonmod.pixelmon.config.PixelmonItems;
-import com.pixelmonmod.pixelmon.config.PixelmonItemsPokeballs;
+import com.pixelmonmod.pixelmon.api.pokemon.drops.ItemWithChance;
+import com.pixelmonmod.pixelmon.api.pokemon.drops.PokemonDropInformation;
+import com.pixelmonmod.pixelmon.api.pokemon.species.Species;
+import com.pixelmonmod.pixelmon.api.registries.PixelmonSpecies;
 import com.pixelmonmod.pixelmon.entities.npcs.registry.DropItemRegistry;
-import com.pixelmonmod.pixelmon.entities.npcs.registry.PokemonDropInformation;
-import com.pixelmonmod.pixelmon.enums.EnumSpecies;
-import mezz.jei.api.IGuiHelper;
-import mezz.jei.api.IModRegistry;
-import mezz.jei.api.gui.IRecipeLayout;
-import mezz.jei.api.ingredients.IIngredients;
-import net.minecraft.item.ItemStack;
+import mezz.jei.api.constants.VanillaTypes;
+import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
+import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
+import mezz.jei.api.helpers.IGuiHelper;
+import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeIngredientRole;
+import mezz.jei.api.recipe.RecipeType;
+import net.minecraft.client.gui.GuiGraphics;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PokeDropRecipeCategory extends DuckRecipeCategory<PokeDropRecipeWrapper> {
 
-    protected static final int X_FIRST_ITEM = 97;
-    protected static final int Y_FIRST_ITEM = 12;
+    public static final RecipeType<PokeDropRecipeWrapper> TYPE = RecipeType.create("justenoughpixelmon", "pokedrop", PokeDropRecipeWrapper.class);
 
     public PokeDropRecipeCategory(IGuiHelper helper) {
-        super("pokedrop", "jep.pokedrop", helper.createBlankDrawable(170, 30), new ItemStack(PixelmonItemsPokeballs.masterBall));
+        super(
+                "pokedrop",
+                TYPE,
+                helper.createBlankDrawable(170, 120),
+                helper.createDrawableIngredient(VanillaTypes.ITEM_STACK, PokeSprites.getSprite(PixelmonSpecies.MISSINGNO.getOrThrow()))
+        );
     }
 
     @Override
-    public void setupRecipes(IModRegistry registry) {
+    public List<PokeDropRecipeWrapper> getRecipes() {
         List<PokeDropRecipeWrapper> recipes = new ArrayList<>();
-
-        // 1. 获取所有宝可梦种类并按全国编号排序
-        List<EnumSpecies> sortedSpecies = new ArrayList<>(DropItemRegistry.pokemonDrops.keySet());
-        sortedSpecies.sort(Comparator.comparingInt(EnumSpecies::getNationalPokedexInteger)); // 按编号升序
-
-        for (EnumSpecies species : sortedSpecies) {
-            for (PokemonDropInformation information : DropItemRegistry.pokemonDrops.get(species)) {
-                PackedDropInfo info = new PackedDropInfo(information);
-                if (info.pokemon.form!=null)
-                {
-                    recipes.add(new PokeDropRecipeWrapper(species, info.getDrops(), info.pokemon.form));
-                }else {
-                    recipes.add(new PokeDropRecipeWrapper(species, info.getDrops()));
-                }
+        List<Species> sortedSpecies = PixelmonSpecies.getAll();
+        // Int2ObjectOpenHashMap#values() 自然有序，无需手排
+        for (Species species : sortedSpecies) {
+            for (PokemonDropInformation info : DropItemRegistry.pokemonDrops.get(species)) {
+                recipes.add(new PokeDropRecipeWrapper(info));
             }
         }
-
-        // 3. 注册排序后的配方
-        registry.addRecipes(recipes, getUid());
+        return recipes;
     }
 
     @Override
-    public void setRecipe(IRecipeLayout recipeLayout, PokeDropRecipeWrapper recipeWrapper, IIngredients iIngredients) {
-        recipeLayout.getItemStacks().init(0, true, 30, 12);
-        if (recipeWrapper.getForm()!=-10086)
-        {
-            recipeLayout.getItemStacks().set(0, PokeSprites.forceNewSpriteWithForm(recipeWrapper.getSpecies(),recipeWrapper.getForm()));
-        }else {
-            recipeLayout.getItemStacks().set(0, PokeSprites.getSprite(recipeWrapper.getSpecies()));
-        }
+    public void setRecipe(IRecipeLayoutBuilder builder, PokeDropRecipeWrapper recipe, IFocusGroup focuses) {
+        builder.addSlot(RecipeIngredientRole.INPUT, 30, 12)
+                .addItemStack(recipe.getSprite());
+
         int xOffset = 0;
-        int slot = 1;
-        for (int i = 0; i < Settings.ITEMS_PER_ROW; i++) {
-            recipeLayout.getItemStacks().init(slot++, false, X_FIRST_ITEM + xOffset, Y_FIRST_ITEM);
+        int slotX = 97;
+        int slotY = 12;
+        int col = 0;
+        for (int i = 0; i < Math.min(recipe.getDrops().size(), Settings.ITEMS_PER_ROW * Settings.ITEMS_PER_COLUMN); i++) {
+            ItemWithChance drop = recipe.getDrops().get(i);
+            builder.addSlot(RecipeIngredientRole.OUTPUT, slotX + xOffset, slotY)
+                    .addItemStacks(List.of(drop.getItemStack()))
+                    .addRichTooltipCallback((view, tooltip) -> tooltip.add(recipe.genDropTooltips(drop)));
             xOffset += 72 / Settings.ITEMS_PER_ROW;
+            col++;
+            if (col == Settings.ITEMS_PER_ROW) {
+                col = 0;
+                xOffset = 0;
+                slotY += 18;
+            }
         }
+    }
 
-        recipeLayout.getItemStacks().addTooltipCallback(recipeWrapper);
-        slot = 1;
-        for (int i = 0; i < Math.min(recipeWrapper.getDrops().size(), Settings.ITEMS_PER_ROW * Settings.ITEMS_PER_COLUMN); i++)
-            recipeLayout.getItemStacks().set(slot++, recipeWrapper.getDrops().get(i).getDrops());
-
+    @Override
+    public void draw(@NotNull PokeDropRecipeWrapper recipe, @NotNull IRecipeSlotsView recipeSlotsView, @NotNull GuiGraphics guiGraphics, double mouseX, double mouseY) {
+        for (PokeDropRecipeWrapper pokeDropRecipeWrapper : getRecipes()) {
+            pokeDropRecipeWrapper.draw(guiGraphics, mouseX, mouseY);
+        }
     }
 }

@@ -1,55 +1,54 @@
 package com.duckfox.jep.plugin;
 
-import com.duckfox.jep.JustEnoughPixelmon;
-import mezz.jei.api.IModRegistry;
-import mezz.jei.api.gui.IDrawable;
-import mezz.jei.api.recipe.IRecipeCategory;
-import mezz.jei.api.recipe.IRecipeWrapper;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.item.ItemStack;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import mezz.jei.api.gui.drawable.IDrawable;
+import mezz.jei.api.recipe.RecipeType;
+import mezz.jei.api.recipe.category.IRecipeCategory;
+import mezz.jei.api.registration.IRecipeRegistration;
+import net.minecraft.network.chat.Component;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.List;
 
 @OnlyIn(Dist.CLIENT)
-public abstract class DuckRecipeCategory<T extends IRecipeWrapper> implements IRecipeCategory<T> {
-    private String titleId;
-    private String uid;
-    private IDrawable background;
-    private ItemStack catalyst;
+public abstract class DuckRecipeCategory<T> implements IRecipeCategory<T> {
+    private final String titleId;
+    private final RecipeType<T> recipeType;
+    private final IDrawable background;
+    private final IDrawable icon;
 
-    public DuckRecipeCategory(String titleId,String uid, IDrawable background, ItemStack catalyst) {
+    public DuckRecipeCategory(String titleId, RecipeType<T> recipeType, IDrawable background, IDrawable icon) {
         this.titleId = titleId;
-        this.uid = uid;
+        this.recipeType = recipeType;
         this.background = background;
-        this.catalyst = catalyst;
+        this.icon = icon;
     }
 
-    public void setup(IModRegistry reg) {
-        reg.addRecipeCatalyst(catalyst, uid);
-        setupRecipes(reg);
+    public void setup(IRecipeRegistration reg) {
+        reg.addRecipes(recipeType, getRecipes());
     }
 
-    public abstract void setupRecipes(IModRegistry reg);
+    public abstract List<T> getRecipes();
 
+    @NotNull
     @Override
-    public String getTitle() {
-        return I18n.format("jep.category."+titleId+".name");
-    }
-
-    @Override
-    public String getUid() {
-        return uid;
+    public Component getTitle() {
+        return Component.translatable("jep.category." + titleId + ".name");
     }
 
     @Override
-    public String getModName() {
-        return JustEnoughPixelmon.NAME;
+    public RecipeType<T> getRecipeType() {
+        return recipeType;
     }
 
+//    @Override
+//    public IDrawable getBackground() {
+//        return background;
+//    }
+
     @Override
-    public IDrawable getBackground() {
-        return background;
+    public IDrawable getIcon() {
+        return icon;
     }
 }

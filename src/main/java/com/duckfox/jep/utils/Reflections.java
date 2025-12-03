@@ -13,4 +13,15 @@ public final class Reflections {
             throw new RuntimeException(e);
         }
     }
+
+    public static <T> T getStatic(Class<?> cls, String fieldName, Class<T> type) {
+        Field field;
+        try {
+            field = cls.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            return type.cast(field.get(null));
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }
